@@ -11,8 +11,12 @@ namespace ReplayParser.FeatureExtraction
 {
     class Program
     {
+        private const char separater = ',';
+
+
         static void Main(string[] args)
         {
+            
 
             if (args == null || args.Length == 0 || String.IsNullOrEmpty(args[0]))
             {
@@ -55,16 +59,18 @@ namespace ReplayParser.FeatureExtraction
                 files = files.Take(take);
 
             // Initialize the streamwriter for the output comma-separated file.
-            using (var terranOut = new StreamWriter("terran.cvs"))
+            using (var terranOut = new StreamWriter("terran.csv"))
             {
 
                 // Write the head of the output-file with the features.
                 string featureString = "";
+                featureString += "\"GAME\"" + separater;
+                featureString += "\"PLAYER\"" + separater;
                 foreach (var feature in buildingFeatures)
                 {
-                    featureString += feature.ToString().ToUpper() + ",";
+                    featureString += "\"" + feature.ToString().ToUpper() + "\"" + separater;
                 }
-                terranOut.WriteLine(featureString);
+                terranOut.WriteLine(featureString.TrimEnd(separater));
 
                 int count = 1;
 
@@ -93,8 +99,8 @@ namespace ReplayParser.FeatureExtraction
                             continue;
 
                         // Begin building output string.
-                        aggregateString = Path.GetFileName(file).Replace(',', '_') + ",";
-                        aggregateString += player.Name.Replace(',', '_') + ",";
+                        aggregateString = "\"" + Path.GetFileName(file).Replace(separater, '_') + "\"" + separater;
+                        aggregateString += "\"" + player.Name.Replace(separater, '_') + "\"" + separater;
 
                         // Get first build time for each feature building
                         foreach (var feature in buildingFeatures)
@@ -103,11 +109,11 @@ namespace ReplayParser.FeatureExtraction
                                 .OrderBy(x => x.Frame)
                                 .Select(x => x.Frame)
                                 .FirstOrDefault() / 23;     // The time is in "Ticks" - divide by 23 to approximate seconds.
-                            aggregateString += buildTime + ",";
+                            aggregateString += buildTime.ToString() + separater;
                         }
 
                         // Write out the players features and flush
-                        terranOut.WriteLine(aggregateString);
+                        terranOut.WriteLine(aggregateString.TrimEnd(separater));
                         terranOut.Flush();
 
 
