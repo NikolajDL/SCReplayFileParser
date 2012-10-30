@@ -31,6 +31,7 @@ namespace ReplayParser.FeatureExtraction
                 Console.WriteLine("Could not find the folder specified.");
                 return;
             }
+
             int take = 0;
             if (args.Length > 1)
             {

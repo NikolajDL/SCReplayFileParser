@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReplayParser.Console", "Rep
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReplayParser.FeatureExtraction", "ReplayParser.FeatureExtraction\ReplayParser.FeatureExtraction.csproj", "{40113F15-7ECB-4A96-913A-187F7F38C989}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReplayParser.Clusterer", "ReplayParser.Clusterer\ReplayParser.Clusterer.csproj", "{F8579F86-42E2-40B4-86E2-E887C3A581FE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -25,6 +27,10 @@ Global
 		{40113F15-7ECB-4A96-913A-187F7F38C989}.Debug|x86.Build.0 = Debug|x86
 		{40113F15-7ECB-4A96-913A-187F7F38C989}.Release|x86.ActiveCfg = Release|x86
 		{40113F15-7ECB-4A96-913A-187F7F38C989}.Release|x86.Build.0 = Release|x86
+		{F8579F86-42E2-40B4-86E2-E887C3A581FE}.Debug|x86.ActiveCfg = Debug|x86
+		{F8579F86-42E2-40B4-86E2-E887C3A581FE}.Debug|x86.Build.0 = Debug|x86
+		{F8579F86-42E2-40B4-86E2-E887C3A581FE}.Release|x86.ActiveCfg = Release|x86
+		{F8579F86-42E2-40B4-86E2-E887C3A581FE}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
