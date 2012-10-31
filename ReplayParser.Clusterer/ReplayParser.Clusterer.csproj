@@ -46,7 +46,6 @@
     <Compile Include="BuildorderTree\Node.cs" />
     <Compile Include="BuildorderTree\NodeList.cs" />
     <Compile Include="BuildorderTree\TreeBuilder.cs" />
-    <Compile Include="Clusterers\IClusterer.cs" />
     <Compile Include="Clusterers\Kmeans.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

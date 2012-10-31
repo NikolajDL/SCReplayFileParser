@@ -3,17 +3,80 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ReplayParser.Interfaces;
-using ReplayParser.Clusterer.Clusterers;
 using ReplayParser.Clusterer.BuildorderTree;
 using ReplayParser.Actions;
 
 namespace ReplayParser.Clusterer
 {
-    class Kmeans : IClusterer
+    class Centroid
     {
-        public void Cluster()
+        private Node<BuildAction> m_centroid;
+        public Node<BuildAction> Value { get { return m_centroid; } }
+
+        private List<Node<BuildAction>> m_observations = new List<Node<BuildAction>>();
+        public List<Node<BuildAction>> Observations { get { return m_observations; } }
+
+        public Centroid(Node<BuildAction> centroid)
         {
-            // TODO!
+            this.m_centroid = centroid;
+        }
+
+        public void AddObservation(Node<BuildAction> obs)
+        {
+            m_observations.Add(obs);
+        }
+    }
+
+    class Kmeans 
+    {
+        private static Random rand = new Random();
+
+        public void Cluster(int k, NodeList<BuildAction> observations)
+        {
+            List<Centroid> centroids = new List<Centroid>();
+            // Use random observations as centroids
+            while (k > 0)
+            {
+                centroids.Add(new Centroid(observations.ElementAt(rand.Next(observations.Count - 1))));
+                k--;
+            }
+
+            // Suk, jeg giver op. LINQ driller :(. For-loops for everybody instead!
+            //var stuffz = observations.Select(x => centroids.Select(y => calcDistance(x, y.Value)).Min());
+            foreach (var o in observations)
+            {
+                Centroid closestCentroid = null;
+                double closestDistance = 9999999999999999999;
+                foreach (var c in centroids)
+                {
+                    double dist = calcDistance(o,c.Value);
+                    if (dist < closestDistance)
+                    {
+                        closestCentroid = c;
+                        closestDistance = dist;
+                    }
+                }
+                closestCentroid.AddObservation(o);
+            }
+        }
+
+        private double calcDistance(Node<BuildAction> o, Node<BuildAction> c, int heightCounter = 1)
+        {
+            double result = 0;
+
+            if (o.Value.ObjectType != c.Value.ObjectType)
+                result += weight(heightCounter);
+
+            if (o.Neighbors == null || c.Neighbors == null) return result;
+            // You are supposed to pass in the raw 'games' themself, not the complete, built, tree. Thus, every node will have at most 1 child.
+            result += calcDistance(o.Neighbors.ElementAt(0), c.Neighbors.ElementAt(0), ++heightCounter);
+            return result;
+        }
+
+        private double weight(int n)
+        {
+            // Exponentially decaying, n > 20 = 0 pretty much. http://www.wolframalpha.com/input/?i=lim+e^%28-n%2F5%29+as+n-%3E10
+            return (Math.Pow(Math.E, (-n / 5))); 
         }
 
         private List<Entities.ObjectType> terranBuildings = new List<Entities.ObjectType>() {   
@@ -50,5 +113,7 @@ namespace ReplayParser.Clusterer
                 Entities.ObjectType.SporeColony, Entities.ObjectType.SunkenColony,
                 Entities.ObjectType.UltraliskCavern
             };
+
+
     }
 }
