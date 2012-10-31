@@ -49,7 +49,7 @@ namespace ReplayParser.Clusterer.BuildorderTree
             m_allGames = allgames;
         }
 
-        private NodeList<BuildAction> buildTree(IEnumerable<BuildAction> actions)
+        public NodeList<BuildAction> buildTree(IEnumerable<BuildAction> actions)
         {
             // Hvorfor kan jeg ikke bruge Except? Det her sucks
             List<BuildAction> rest = actions.ToList();
