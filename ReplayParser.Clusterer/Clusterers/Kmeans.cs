@@ -30,6 +30,8 @@ namespace ReplayParser.Clusterer
     class Kmeans
     {
         private static Random rand = new Random();
+        private List<Centroid> m_clusters;
+        public List<Centroid> Clusters { get { return m_clusters; } }
 
         public void Cluster(int k, NodeList<BuildAction> observations)
         {
@@ -41,6 +43,21 @@ namespace ReplayParser.Clusterer
                 k--;
             }
 
+            assignToCentroid(observations, centroids);
+            
+            // TODO: Check if stability has occured instead of just doing 25 iterations... 
+            // Im tired, no moar coffee....
+            for (int i = 0; i < 25; i++)
+            {
+                centroids = iterate(centroids);
+                assignToCentroid(observations, centroids);
+            }
+
+            m_clusters = centroids;
+        }
+
+        private void assignToCentroid(NodeList<BuildAction> observations, List<Centroid> centroids)
+        {
             // Suk, jeg giver op. LINQ driller :(. For-loops for everybody instead!
             //var stuffz = observations.Select(x => centroids.Select(y => calcDistance(x, y.Value)).Min());
             foreach (var o in observations)
@@ -58,9 +75,6 @@ namespace ReplayParser.Clusterer
                 }
                 closestCentroid.AddObservation(o);
             }
-
-
-            var stuffz = iterate(centroids);
         }
 
         private List<Centroid> iterate(List<Centroid> centroids)
@@ -70,16 +84,14 @@ namespace ReplayParser.Clusterer
             foreach (var c in centroids)
             {
                 Centroid newCentroid = generateCentroid(c.Observations);
-                foreach (var o in c.Observations)
-                {
-                    // Cannot really
-                }
+                result.Add(newCentroid);
             }
             return result;
         }
 
-        private Centroid generateCentroid(List<Node<BuildAction>> observations, int counter = 1)
+        private Centroid generateCentroid(List<Node<BuildAction>> observations)
         {
+            if (observations.Count == 0) return null;
             // Find most common building
             var mostCommonBuilding = (from item in observations
                           group item by item.Value.ObjectType into g
@@ -133,10 +145,11 @@ namespace ReplayParser.Clusterer
 
         private double weight(int n)
         {
-            // Exponentially decaying, n > 20 = 0. http://www.wolframalpha.com/input/?i=lim+e^%28-n%2F5%29+as+n-%3E10
+            // Exponentially decaying, n > 20 = 0. Visuals: http://www.wolframalpha.com/input/?i=lim+e^%28-n%2F5%29+as+n-%3E10
             return (Math.Pow(Math.E, (-n / 5)));
         }
 
+        // I have no idea why i made this, but im too lazy to risk having to type it again.
         private List<Entities.ObjectType> allBuildings = new List<Entities.ObjectType>()
         {
             Entities.ObjectType.Barracks, Entities.ObjectType.SupplyDepot,
