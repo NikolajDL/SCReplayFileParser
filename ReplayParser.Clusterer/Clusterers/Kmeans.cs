@@ -39,19 +39,24 @@ namespace ReplayParser.Clusterer
             // Use random observations as centroids
             //List<Centroid> centroids = initialCentroidRandom(k, observations);
             List<Centroid> centroids = initialCentroidReasonable(observations); // OBS! Ignores k
+            foreach (Centroid c in centroids)
+                observations.Remove(c.Value);
 
             assignToCentroid(observations, centroids);
-            // Using reasonable centroids, a single iteration is enough for stability to occur
-            centroids = iterate(centroids);
-            assignToCentroid(observations, centroids);
 
-            // TODO: Check if stability has occured instead of just doing 25 iterations... 
+            // TODO: Check if stability has occured instead
             // Im tired, no moar coffee....
-            //for (int i = 0; i < 25; i++)
-            //{
-            //    centroids = iterate(centroids);
-            //    assignToCentroid(observations, centroids);
-            //}
+            for (int i = 0; i < 3; i++)
+            {
+                centroids = iterate(centroids);
+                assignToCentroid(observations, centroids);
+            }
+
+            foreach (var c in centroids)
+            {
+                var err = c.Observations.Where(x => x.Value.ObjectType != c.Value.Value.ObjectType);
+                System.Console.WriteLine("Error count: " + err.Count());
+            }
 
             m_clusters = centroids;
         }
@@ -100,6 +105,11 @@ namespace ReplayParser.Clusterer
                         closestCentroid = c;
                         closestDistance = dist;
                     }
+
+                }
+                if (closestCentroid.Value.Value.ObjectType != o.Value.ObjectType)
+                {
+                    int somethingIzWrongz = 42;
                 }
                 closestCentroid.AddObservation(o);
             }
@@ -112,7 +122,10 @@ namespace ReplayParser.Clusterer
             foreach (var c in centroids)
             {
                 Centroid newCentroid = generateCentroid(c.Observations);
-                result.Add(newCentroid);
+                if (newCentroid != null)
+                    result.Add(newCentroid);
+                else
+                    result.Add(c);
             }
             return result;
         }
@@ -165,7 +178,8 @@ namespace ReplayParser.Clusterer
             if (o.Value.ObjectType != c.Value.ObjectType)
                 result += weight(heightCounter);
 
-            if (o.Neighbors == null || c.Neighbors == null) return result;
+            if (o.Neighbors == null || c.Neighbors == null) 
+                return result+(10*(1/heightCounter)); // "Punish" observations with low height
             // You are supposed to pass in the raw 'games' themself, not the complete, built, tree. Thus, every node will have at most 1 child.
             result += calcDistance(o.Neighbors.ElementAt(0), c.Neighbors.ElementAt(0), ++heightCounter);
             return result;
@@ -174,7 +188,8 @@ namespace ReplayParser.Clusterer
         private double weight(int n)
         {
             // Exponentially decaying, n > 20 = 0. Visuals: http://www.wolframalpha.com/input/?i=lim+e^%28-n%2F5%29+as+n-%3E10
-            return (Math.Pow(Math.E, (-n / 5)));
+            return 100*(Math.Pow(Math.E, (-n / 1)));
+            //return 1+(Math.Pow(Math.E, -n));
         }       
     }
 }
