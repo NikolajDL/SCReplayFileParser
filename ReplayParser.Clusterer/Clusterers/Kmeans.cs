@@ -107,10 +107,6 @@ namespace ReplayParser.Clusterer
                     }
 
                 }
-                if (closestCentroid.Value.Value.ObjectType != o.Value.ObjectType)
-                {
-                    int somethingIzWrongz = 42;
-                }
                 closestCentroid.AddObservation(o);
             }
         }
@@ -179,7 +175,7 @@ namespace ReplayParser.Clusterer
                 result += weight(heightCounter);
 
             if (o.Neighbors == null || c.Neighbors == null) 
-                return result+(10*(1/heightCounter)); // "Punish" observations with low height
+                return result+(1*(1/heightCounter)); // "Punish" observations with low height
             // You are supposed to pass in the raw 'games' themself, not the complete, built, tree. Thus, every node will have at most 1 child.
             result += calcDistance(o.Neighbors.ElementAt(0), c.Neighbors.ElementAt(0), ++heightCounter);
             return result;
@@ -188,8 +184,7 @@ namespace ReplayParser.Clusterer
         private double weight(int n)
         {
             // Exponentially decaying, n > 20 = 0. Visuals: http://www.wolframalpha.com/input/?i=lim+e^%28-n%2F5%29+as+n-%3E10
-            return 100*(Math.Pow(Math.E, (-n / 1)));
-            //return 1+(Math.Pow(Math.E, -n));
+            return 1000*(Math.Pow(Math.E, (-n)));
         }       
     }
 }
