@@ -15,15 +15,15 @@ namespace ReplayParser.Clusterer
     {
         static void Main(string[] args)
         {
-            //if (args == null || args.Length == 0 || String.IsNullOrEmpty(args[0]))
-            //{
-            //    Console.WriteLine("You need to specify a folder containing the replays.");
-            //    return;
-            //}
+            if (args == null || args.Length == 0 || String.IsNullOrEmpty(args[0]))
+            {
+                Console.WriteLine("You need to specify a folder containing the replays.");
+                return;
+            }
 
-            // Set path of folder containing replay files
-            //string filepath = args[0];
-            string filepath = @"F:\reps";
+            //Set path of folder containing replay files
+            string filepath = args[0];
+            //string filepath = @"F:\reps";
             if (!Directory.Exists(filepath))
             {
                 Console.WriteLine("Could not find the folder specified.");

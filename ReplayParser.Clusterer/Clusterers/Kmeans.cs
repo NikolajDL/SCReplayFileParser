@@ -35,31 +35,59 @@ namespace ReplayParser.Clusterer
 
         public void Cluster(int k, NodeList<BuildAction> observations)
         {
-            List<Centroid> centroids = new List<Centroid>();
+             
             // Use random observations as centroids
+            //List<Centroid> centroids = initialCentroidRandom(k, observations);
+            List<Centroid> centroids = initialCentroidReasonable(observations); // OBS! Ignores k
+
+            assignToCentroid(observations, centroids);
+            // Using reasonable centroids, a single iteration is enough for stability to occur
+            centroids = iterate(centroids);
+            assignToCentroid(observations, centroids);
+
+            // TODO: Check if stability has occured instead of just doing 25 iterations... 
+            // Im tired, no moar coffee....
+            //for (int i = 0; i < 25; i++)
+            //{
+            //    centroids = iterate(centroids);
+            //    assignToCentroid(observations, centroids);
+            //}
+
+            m_clusters = centroids;
+        }
+
+        private List<Centroid> initialCentroidReasonable(NodeList<BuildAction> observations)
+        {
+            List<Centroid> centroids = new List<Centroid>();
+
+            // We know there are 6 possible openers in Starcraft (based on datamining).
+            // Use these as centroids
+            centroids.Add(new Centroid(observations.Where(x => x.Value.ObjectType == Entities.ObjectType.Pylon).First()));
+            centroids.Add(new Centroid(observations.Where(x => x.Value.ObjectType == Entities.ObjectType.Extractor).First()));
+            centroids.Add(new Centroid(observations.Where(x => x.Value.ObjectType == Entities.ObjectType.SpawningPool).First()));
+            centroids.Add(new Centroid(observations.Where(x => x.Value.ObjectType == Entities.ObjectType.Hatchery).First()));
+            centroids.Add(new Centroid(observations.Where(x => x.Value.ObjectType == Entities.ObjectType.Barracks).First()));
+            centroids.Add(new Centroid(observations.Where(x => x.Value.ObjectType == Entities.ObjectType.SupplyDepot).First()));
+
+            return centroids;
+        }
+
+        private List<Centroid> initialCentroidRandom(int k, NodeList<BuildAction> observations)
+        {
+            List<Centroid> centroids = new List<Centroid>();
             while (k > 0)
             {
                 centroids.Add(new Centroid(observations.ElementAt(rand.Next(observations.Count - 1))));
                 k--;
             }
-
-            assignToCentroid(observations, centroids);
-            
-            // TODO: Check if stability has occured instead of just doing 25 iterations... 
-            // Im tired, no moar coffee....
-            for (int i = 0; i < 25; i++)
-            {
-                centroids = iterate(centroids);
-                assignToCentroid(observations, centroids);
-            }
-
-            m_clusters = centroids;
+            return centroids;
         }
 
         private void assignToCentroid(NodeList<BuildAction> observations, List<Centroid> centroids)
         {
-            // Suk, jeg giver op. LINQ driller :(. For-loops for everybody instead!
-            //var stuffz = observations.Select(x => centroids.Select(y => calcDistance(x, y.Value)).Min());
+            // Alternative implementation of the following for-loops. Completely unreadable (also slower?), but cool!
+            //var stuffz = observations.Select(x => centroids.Select(y => new { y, distance = calcDistance(x, y.Value) }).OrderBy(z => z.distance).First());
+
             foreach (var o in observations)
             {
                 Centroid closestCentroid = null;
@@ -147,40 +175,6 @@ namespace ReplayParser.Clusterer
         {
             // Exponentially decaying, n > 20 = 0. Visuals: http://www.wolframalpha.com/input/?i=lim+e^%28-n%2F5%29+as+n-%3E10
             return (Math.Pow(Math.E, (-n / 5)));
-        }
-
-        // I have no idea why i made this, but im too lazy to risk having to type it again.
-        private List<Entities.ObjectType> allBuildings = new List<Entities.ObjectType>()
-        {
-            Entities.ObjectType.Barracks, Entities.ObjectType.SupplyDepot,
-            Entities.ObjectType.CommandCenter, Entities.ObjectType.Refinery,
-            Entities.ObjectType.EngineeringBay, Entities.ObjectType.Bunker,
-            Entities.ObjectType.Academy, Entities.ObjectType.Factory,
-            Entities.ObjectType.MissileTurret, Entities.ObjectType.ComsatStation,
-            Entities.ObjectType.MachineShop, Entities.ObjectType.Starport,
-            Entities.ObjectType.Armory, Entities.ObjectType.ScienceFacility,
-            Entities.ObjectType.ControlTower, Entities.ObjectType.PhysicsLab,
-            Entities.ObjectType.CovertOps, Entities.ObjectType.NuclearSilo,
-
-            Entities.ObjectType.ArbiterTribunal, Entities.ObjectType.Assimilator,
-            Entities.ObjectType.CitadelOfAdun, Entities.ObjectType.CyberneticsCore,
-            Entities.ObjectType.FleetBeacon, Entities.ObjectType.Forge,
-            Entities.ObjectType.Gateway, Entities.ObjectType.Nexus,
-            Entities.ObjectType.Observatory, Entities.ObjectType.PhotonCannon,
-            Entities.ObjectType.Pylon, Entities.ObjectType.RoboticsFacility,
-            Entities.ObjectType.RoboticsSupportBay, Entities.ObjectType.ShieldBattery,
-            Entities.ObjectType.Stargate, Entities.ObjectType.TemplarArchives,
-
-            Entities.ObjectType.CreepColony, Entities.ObjectType.DefilerMound,
-            Entities.ObjectType.EvolutionChamber, Entities.ObjectType.Extractor,
-            Entities.ObjectType.GreaterSpire, Entities.ObjectType.Hatchery,
-            Entities.ObjectType.Hive, Entities.ObjectType.HydraliskDen,
-            Entities.ObjectType.InfestedCommandCenter, Entities.ObjectType.Lair,
-            Entities.ObjectType.NydusCanal, Entities.ObjectType.QueensNest,
-            Entities.ObjectType.SpawningPool, Entities.ObjectType.Spire,
-            Entities.ObjectType.SporeColony, Entities.ObjectType.SunkenColony,
-            Entities.ObjectType.UltraliskCavern
-        };
-        
+        }       
     }
 }
