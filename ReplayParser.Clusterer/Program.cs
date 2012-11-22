@@ -54,11 +54,19 @@ namespace ReplayParser.Clusterer
             TreeBuilder tb = new TreeBuilder(parsedReplays);
             tb.Build();
 
+            string supbitches = tb.ToString();
+            System.Console.WriteLine(supbitches);
+            using (StreamWriter writer = new StreamWriter(new FileStream("graphviz.txt", FileMode.Create)))
+            {
+                writer.Write(supbitches);
+            }
+
             Kmeans c = new Kmeans();
             c.Cluster(5, tb.AllGames);
 
             sw.Stop();
             System.Console.WriteLine("Time: " + sw.Elapsed.TotalSeconds);
+            System.Console.ReadKey();
         }
     }
 }

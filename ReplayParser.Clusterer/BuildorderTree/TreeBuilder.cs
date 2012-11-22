@@ -12,6 +12,10 @@ namespace ReplayParser.Clusterer.BuildorderTree
         private List<IReplay> m_replays;
         private NodeList<BuildAction> m_roots;
         private NodeList<BuildAction> m_allGames;
+
+        public NodeList<BuildAction> Roots { get { return m_roots; } }
+        public NodeList<BuildAction> AllGames { get { return m_allGames; } }
+
         public TreeBuilder(List<IReplay> replays)
         {
             this.m_replays = replays;
@@ -49,7 +53,49 @@ namespace ReplayParser.Clusterer.BuildorderTree
             m_allGames = allgames;
         }
 
-        public NodeList<BuildAction> buildTree(IEnumerable<BuildAction> actions)
+        // TODO: Move to tree instead
+        private string depthFirstSearch(Node<BuildAction> root, NodeList<BuildAction> neighbours)
+        {
+            if (root == null || neighbours == null) return null;
+
+            string result = "";
+            foreach(var n in neighbours)
+            {
+                result += root.Value.ObjectType + " -> " + n.Value.ObjectType + "; ";
+                result += depthFirstSearch(n, n.Neighbors);
+            }
+
+            return result;
+        }
+
+        public override string ToString()
+        {
+            string result = "digraph G { ";
+        	foreach(var r in this.Roots)
+            {
+                
+                result += "subgraph " + r.Value.ObjectType + "{ "; // TODO: Get readable name
+                foreach(var n in r.Neighbors)
+                {
+                    result += r.Value.ObjectType + " -> " + n.Value.ObjectType + "; ";
+                    result += depthFirstSearch(n, n.Neighbors);
+                    
+                }
+                result += "}";
+            }
+
+            foreach (var rr in this.Roots)
+            {
+                result += "start -> " + rr.Value.ObjectType + "; ";
+            }
+
+            result += "start [shape=Mdiamond]; ";
+	        result += "end [shape=Msquare]; ";
+            result += "}";
+            return result;
+        }
+
+        private NodeList<BuildAction> buildTree(IEnumerable<BuildAction> actions)
         {
             // Hvorfor kan jeg ikke bruge Except? Det her sucks
             List<BuildAction> rest = actions.ToList();
@@ -78,7 +124,6 @@ namespace ReplayParser.Clusterer.BuildorderTree
             }
         }
 
-        public NodeList<BuildAction> Roots { get { return m_roots; } }
-        public NodeList<BuildAction> AllGames { get { return m_allGames; } }
+
     }
 }
